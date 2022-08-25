@@ -22,16 +22,21 @@ public class Transporter {
     }
 
     public void send(byte[] data) throws Exception {
+        // 将sql转成的byte[]转成16进制
         String raw = hexEncode(data);
+        System.out.println("Hex十六进制==>" + raw);
+        // 写入Bf
         writer.write(raw);
         writer.flush();
     }
 
     public byte[] receive() throws Exception {
         String line = reader.readLine();
+        System.out.println("接收到十六制数据==>" + line);
         if(line == null) {
             close();
         }
+        // 将十六进制的数据转成byte[]
         return hexDecode(line);
     }
 

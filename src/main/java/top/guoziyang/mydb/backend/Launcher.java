@@ -26,16 +26,21 @@ public class Launcher {
 
     public static void main(String[] args) throws ParseException {
         Options options = new Options();
+        // 第一次运行时需要传入的数据库文件路径，例如可以传入 -open D:/mydb/mydb
         options.addOption("open", true, "-open DBPath");
+        // 创建数据库文件的路径
         options.addOption("create", true, "-create DBPath");
         options.addOption("mem", true, "-mem 64MB");
+        // 解析器
         CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options,args);
 
+        CommandLine cmd = parser.parse(options, args);
+        // 打开数据库
         if(cmd.hasOption("open")) {
             openDB(cmd.getOptionValue("open"), parseMem(cmd.getOptionValue("mem")));
             return;
         }
+        // 创建一个数据库
         if(cmd.hasOption("create")) {
             createDB(cmd.getOptionValue("create"));
             return;
@@ -43,6 +48,14 @@ public class Launcher {
         System.out.println("Usage: launcher (open|create) DBPath");
     }
 
+    /**
+     * 初始化一个数据库，初始化的顺序是<br/>
+     * 1.首先是初始化Transaction Manager
+     * 2.然后初始化一个Data Manager
+     * 3.再初始化一个Version Manager
+     * 4.初始化Table Manager
+     * @param path 路径
+     */
     private static void createDB(String path) {
         TransactionManager tm = TransactionManager.create(path);
         DataManager dm = DataManager.create(path, DEFALUT_MEM, tm);

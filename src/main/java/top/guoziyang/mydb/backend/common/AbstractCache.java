@@ -11,12 +11,26 @@ import top.guoziyang.mydb.common.Error;
  * AbstractCache 实现了一个引用计数策略的缓存
  */
 public abstract class AbstractCache<T> {
-    private HashMap<Long, T> cache;                     // 实际缓存的数据
-    private HashMap<Long, Integer> references;          // 元素的引用个数
-    private HashMap<Long, Boolean> getting;             // 正在获取某资源的线程
-
-    private int maxResource;                            // 缓存的最大缓存资源数
-    private int count = 0;                              // 缓存中元素的个数
+    /**
+     * 实际缓存的数据
+     */
+    private HashMap<Long, T> cache;
+    /**
+     * 元素的引用个数
+     */
+    private HashMap<Long, Integer> references;
+    /**
+     * 正在获取某资源的线程
+     */
+    private HashMap<Long, Boolean> getting;
+    /**
+     * 缓存的最大缓存资源数
+     */
+    private int maxResource;
+    /**
+     * 缓存中元素的个数
+     */
+    private int count = 0;
     private Lock lock;
 
     public AbstractCache(int maxResource) {

@@ -1,7 +1,13 @@
 package top.guoziyang.mydb.transport;
 
 public class Package {
+    /**
+     * 数据包
+     */
     byte[] data;
+    /**
+     * 异常信息
+     */
     Exception err;
 
     public Package(byte[] data, Exception err) {

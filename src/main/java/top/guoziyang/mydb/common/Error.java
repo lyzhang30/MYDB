@@ -1,27 +1,38 @@
 package top.guoziyang.mydb.common;
 
+
 public class Error {
-    // common
+    /**
+     * common 异常异常
+     **/
     public static final Exception CacheFullException = new RuntimeException("Cache is full!");
     public static final Exception FileExistsException = new RuntimeException("File already exists!");
     public static final Exception FileNotExistsException = new RuntimeException("File does not exists!");
     public static final Exception FileCannotRWException = new RuntimeException("File cannot read or write!");
 
-    // dm
+    /**
+     * Data Manager 的异常信息
+     */
     public static final Exception BadLogFileException = new RuntimeException("Bad log file!");
     public static final Exception MemTooSmallException = new RuntimeException("Memory too small!");
     public static final Exception DataTooLargeException = new RuntimeException("Data too large!");
     public static final Exception DatabaseBusyException = new RuntimeException("Database is busy!");
 
-    // tm
+    /**
+     * Transaction Manager 的异常信息
+     */
     public static final Exception BadXIDFileException = new RuntimeException("Bad XID file!");
 
-    // vm
+    /**
+     * Version Manager 的异常信息
+     */
     public static final Exception DeadlockException = new RuntimeException("Deadlock!");
     public static final Exception ConcurrentUpdateException = new RuntimeException("Concurrent update issue!");
     public static final Exception NullEntryException = new RuntimeException("Null entry!");
 
-    // tbm
+    /**
+     * Table Manager 的异常信息
+     */
     public static final Exception InvalidFieldException = new RuntimeException("Invalid field type!");
     public static final Exception FieldNotFoundException = new RuntimeException("Field not found!");
     public static final Exception FieldNotIndexedException = new RuntimeException("Field not indexed!");
@@ -30,17 +41,25 @@ public class Error {
     public static final Exception DuplicatedTableException = new RuntimeException("Duplicated table!");
     public static final Exception TableNotFoundException = new RuntimeException("Table not found!");
 
-    // parser
+    /**
+     * parser 解析时的报错
+     */
     public static final Exception InvalidCommandException = new RuntimeException("Invalid command!");
     public static final Exception TableNoIndexException = new RuntimeException("Table has no index!");
 
-    // transport
+    /**
+     * transport 传输时的错误
+     */
     public static final Exception InvalidPkgDataException = new RuntimeException("Invalid package data!");
 
-    // server
+    /**
+     * server 服务端的错误
+     */
     public static final Exception NestedTransactionException = new RuntimeException("Nested transaction not supported!");
     public static final Exception NoTransactionException = new RuntimeException("Not in transaction!");
 
-    // launcher
+    /**
+     * launcher 运行时的错误
+     */
     public static final Exception InvalidMemException = new RuntimeException("Invalid memory!");
 }

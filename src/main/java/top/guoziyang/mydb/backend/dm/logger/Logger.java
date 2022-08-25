@@ -18,6 +18,9 @@ public interface Logger {
     void rewind();
     void close();
 
+    /**
+     * 创建一个日志文件
+     */
     public static Logger create(String path) {
         File f = new File(path+LoggerImpl.LOG_SUFFIX);
         try {

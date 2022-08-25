@@ -11,6 +11,9 @@ import top.guoziyang.mydb.backend.utils.Panic;
 import top.guoziyang.mydb.backend.utils.Parser;
 import top.guoziyang.mydb.common.Error;
 
+/**
+ * @author 大勇
+ */
 public class TransactionManagerImpl implements TransactionManager {
 
     // XID文件头长度
@@ -18,20 +21,26 @@ public class TransactionManagerImpl implements TransactionManager {
     // 每个事务的占用长度
     private static final int XID_FIELD_SIZE = 1;
 
-    // 事务的三种状态
+    /**
+     * 事务的三种状态，0是正常运行，1是已提交，2是已经回滚
+     */
     private static final byte FIELD_TRAN_ACTIVE   = 0;
 	private static final byte FIELD_TRAN_COMMITTED = 1;
 	private static final byte FIELD_TRAN_ABORTED  = 2;
 
-    // 超级事务，永远为commited状态
+    /**
+     * 超级事务，永远为committed状态
+     */
     public static final long SUPER_XID = 0;
-
+    /**
+     * XID 文件后缀
+     */
     static final String XID_SUFFIX = ".xid";
     
-    private RandomAccessFile file;
-    private FileChannel fc;
+    private final RandomAccessFile file;
+    private final FileChannel fc;
     private long xidCounter;
-    private Lock counterLock;
+    private final Lock counterLock;
 
     TransactionManagerImpl(RandomAccessFile raf, FileChannel fc) {
         this.file = raf;
@@ -69,12 +78,18 @@ public class TransactionManagerImpl implements TransactionManager {
         }
     }
 
-    // 根据事务xid取得其在xid文件中对应的位置
+    /**
+     * 根据事务xid取得其在xid文件中对应的位置
+     * @param xid
+     * @return
+     */
     private long getXidPosition(long xid) {
-        return LEN_XID_HEADER_LENGTH + (xid-1)*XID_FIELD_SIZE;
+        return LEN_XID_HEADER_LENGTH + (xid - 1) * XID_FIELD_SIZE;
     }
 
-    // 更新xid事务的状态为status
+    /**
+     * 更新xid事务的状态为status
+     */
     private void updateXID(long xid, byte status) {
         long offset = getXidPosition(xid);
         byte[] tmp = new byte[XID_FIELD_SIZE];
@@ -93,7 +108,9 @@ public class TransactionManagerImpl implements TransactionManager {
         }
     }
 
-    // 将XID加一，并更新XID Header
+    /**
+     * 将XID加一，并更新XID Header
+     */
     private void incrXIDCounter() {
         xidCounter ++;
         ByteBuffer buf = ByteBuffer.wrap(Parser.long2Byte(xidCounter));
@@ -110,7 +127,10 @@ public class TransactionManagerImpl implements TransactionManager {
         }
     }
 
-    // 开始一个事务，并返回XID
+    /**
+     * 开始一个事务，并返回XID
+     */
+    @Override
     public long begin() {
         counterLock.lock();
         try {
@@ -123,17 +143,25 @@ public class TransactionManagerImpl implements TransactionManager {
         }
     }
 
-    // 提交XID事务
+    /**
+     * 提交XID事务
+     */
+    @Override
     public void commit(long xid) {
         updateXID(xid, FIELD_TRAN_COMMITTED);
     }
 
-    // 回滚XID事务
+    /**
+     * 回滚XID事务
+     */
+    @Override
     public void abort(long xid) {
         updateXID(xid, FIELD_TRAN_ABORTED);
     }
 
-    // 检测XID事务是否处于status状态
+    /**
+     * 检测XID事务是否处于status状态
+     */
     private boolean checkXID(long xid, byte status) {
         long offset = getXidPosition(xid);
         ByteBuffer buf = ByteBuffer.wrap(new byte[XID_FIELD_SIZE]);
@@ -146,21 +174,31 @@ public class TransactionManagerImpl implements TransactionManager {
         return buf.array()[0] == status;
     }
 
+    @Override
     public boolean isActive(long xid) {
-        if(xid == SUPER_XID) return false;
+        if(xid == SUPER_XID) {
+            return false;
+        }
         return checkXID(xid, FIELD_TRAN_ACTIVE);
     }
 
+    @Override
     public boolean isCommitted(long xid) {
-        if(xid == SUPER_XID) return true;
+        if(xid == SUPER_XID){
+            return true;
+        }
         return checkXID(xid, FIELD_TRAN_COMMITTED);
     }
 
+    @Override
     public boolean isAborted(long xid) {
-        if(xid == SUPER_XID) return false;
+        if(xid == SUPER_XID) {
+            return false;
+        }
         return checkXID(xid, FIELD_TRAN_ABORTED);
     }
 
+    @Override
     public void close() {
         try {
             fc.close();

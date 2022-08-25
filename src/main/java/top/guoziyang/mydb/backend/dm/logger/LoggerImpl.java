@@ -39,9 +39,15 @@ public class LoggerImpl implements Logger {
     private RandomAccessFile file;
     private FileChannel fc;
     private Lock lock;
+    /**
+     * 当前日志指针的位置
+     */
 
-    private long position;  // 当前日志指针的位置
-    private long fileSize;  // 初始化时记录，log操作不更新
+    private long position;
+    /**
+     * 初始化时记录，log操作不更新
+     */
+    private long fileSize;
     private int xChecksum;
 
     LoggerImpl(RandomAccessFile raf, FileChannel fc) {
@@ -82,7 +88,9 @@ public class LoggerImpl implements Logger {
         checkAndRemoveTail();
     }
 
-    // 检查并移除bad tail
+    /**
+     * 检查并移除bad tail
+     */
     private void checkAndRemoveTail() {
         rewind();
 

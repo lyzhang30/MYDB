@@ -42,13 +42,14 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
         this.pageNumbers = new AtomicInteger((int)length / PAGE_SIZE);
     }
 
+    @Override
     public int newPage(byte[] initData) {
         int pgno = pageNumbers.incrementAndGet();
         Page pg = new PageImpl(pgno, initData, null);
         flush(pg);
         return pgno;
     }
-
+    @Override
     public Page getPage(int pgno) throws Exception {
         return get((long)pgno);
     }
@@ -80,11 +81,11 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
             pg.setDirty(false);
         }
     }
-
+    @Override
     public void release(Page page) {
         release((long)page.getPageNumber());
     }
-
+    @Override
     public void flushPage(Page pg) {
         flush(pg);
     }
@@ -105,7 +106,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
             fileLock.unlock();
         }
     }
-
+    @Override
     public void truncateByBgno(int maxPgno) {
         long size = pageOffset(maxPgno + 1);
         try {
@@ -126,7 +127,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
             Panic.panic(e);
         }
     }
-
+    @Override
     public int getPageNumber() {
         return pageNumbers.intValue();
     }

@@ -22,8 +22,11 @@ public interface PageCache {
     int getPageNumber();
     void flushPage(Page pg);
 
+    /**
+     * 创建一个db存储数据的文件
+     */
     public static PageCacheImpl create(String path, long memory) {
-        File f = new File(path+PageCacheImpl.DB_SUFFIX);
+        File f = new File(path + PageCacheImpl.DB_SUFFIX);
         try {
             if(!f.createNewFile()) {
                 Panic.panic(Error.FileExistsException);

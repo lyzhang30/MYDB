@@ -11,12 +11,14 @@ public class Client {
     }
 
     public byte[] execute(byte[] stat) throws Exception {
-        Package pkg = new Package(stat, null);
-        Package resPkg = rt.roundTrip(pkg);
-        if(resPkg.getErr() != null) {
-            throw resPkg.getErr();
+        Package sendPackage = new Package(stat, null);
+        Package receivePackage = rt.roundTrip(sendPackage);
+        if(receivePackage.getErr() != null) {
+            throw receivePackage.getErr();
         }
-        return resPkg.getData();
+        byte[] receivePackageData = receivePackage.getData();
+        System.out.println("接收到的结果==>" + receivePackageData);
+        return receivePackageData;
     }
 
     public void close() {
