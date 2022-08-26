@@ -65,7 +65,6 @@ public interface TransactionManager {
         File writeFile = new File(path + TransactionManagerImpl.XID_SUFFIX);
         // 目录不存在就先创建目录
         try {
-
             if (!dataBasePathDirectory.exists()) {
                 dataBasePathDirectory.mkdirs();
             }
@@ -89,7 +88,7 @@ public interface TransactionManager {
            Panic.panic(e);
         }
 
-        // 写空XID文件头
+        // 写空XID文件头，即设置xidCounter为0，否则后续在校验时会不合法
         ByteBuffer buf = ByteBuffer.wrap(new byte[TransactionManagerImpl.LEN_XID_HEADER_LENGTH]);
         try {
             fc.position(0);

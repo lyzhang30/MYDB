@@ -16,11 +16,14 @@ import top.guoziyang.mydb.common.Error;
  */
 public class TransactionManagerImpl implements TransactionManager {
 
-    // XID文件头长度
+    /**
+     * XID文件头长度
+     */
     static final int LEN_XID_HEADER_LENGTH = 8;
-    // 每个事务的占用长度
+    /**
+     * 每个事务的占用长度
+     */
     private static final int XID_FIELD_SIZE = 1;
-
     /**
      * 事务的三种状态，0是正常运行，1是已提交，2是已经回滚
      */
@@ -80,8 +83,6 @@ public class TransactionManagerImpl implements TransactionManager {
 
     /**
      * 根据事务xid取得其在xid文件中对应的位置
-     * @param xid
-     * @return
      */
     private long getXidPosition(long xid) {
         return LEN_XID_HEADER_LENGTH + (xid - 1) * XID_FIELD_SIZE;
@@ -112,7 +113,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * 将XID加一，并更新XID Header
      */
     private void incrXIDCounter() {
-        xidCounter ++;
+        xidCounter++;
         ByteBuffer buf = ByteBuffer.wrap(Parser.long2Byte(xidCounter));
         try {
             fc.position(0);
@@ -121,6 +122,7 @@ public class TransactionManagerImpl implements TransactionManager {
             Panic.panic(e);
         }
         try {
+            // 方法，强制同步缓存内容到文件中，类似flush()方法
             fc.force(false);
         } catch (IOException e) {
             Panic.panic(e);
@@ -134,6 +136,7 @@ public class TransactionManagerImpl implements TransactionManager {
     public long begin() {
         counterLock.lock();
         try {
+            //
             long xid = xidCounter + 1;
             updateXID(xid, FIELD_TRAN_ACTIVE);
             incrXIDCounter();
@@ -144,7 +147,7 @@ public class TransactionManagerImpl implements TransactionManager {
     }
 
     /**
-     * 提交XID事务
+     * 提交XID事务，更新状态成1
      */
     @Override
     public void commit(long xid) {
@@ -152,7 +155,7 @@ public class TransactionManagerImpl implements TransactionManager {
     }
 
     /**
-     * 回滚XID事务
+     * 回滚XID事务，更新状态为x
      */
     @Override
     public void abort(long xid) {
