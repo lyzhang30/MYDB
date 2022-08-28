@@ -11,21 +11,21 @@ import top.guoziyang.mydb.common.Error;
 
 public interface PageCache {
     
-    public static final int PAGE_SIZE = 1 << 13;
+    int PAGE_SIZE = 1 << 13;
 
     int newPage(byte[] initData);
-    Page getPage(int pgno) throws Exception;
+    Page getPage(int pageNo) throws Exception;
     void close();
     void release(Page page);
 
-    void truncateByBgno(int maxPgno);
+    void truncateByBgno(int maxPageNo);
     int getPageNumber();
-    void flushPage(Page pg);
+    void flushPage(Page page);
 
     /**
      * 创建一个db存储数据的文件
      */
-    public static PageCacheImpl create(String path, long memory) {
+    static PageCacheImpl create(String path, long memory) {
         File f = new File(path + PageCacheImpl.DB_SUFFIX);
         try {
             if(!f.createNewFile()) {
@@ -46,15 +46,18 @@ public interface PageCache {
         } catch (FileNotFoundException e) {
            Panic.panic(e);
         }
-        return new PageCacheImpl(raf, fc, (int)memory/PAGE_SIZE);
+        return new PageCacheImpl(raf, fc, (int) memory / PAGE_SIZE);
     }
 
-    public static PageCacheImpl open(String path, long memory) {
+    /**
+     * 打开一个db存储的文件
+     */
+    static PageCacheImpl open(String path, long memory) {
         File f = new File(path+PageCacheImpl.DB_SUFFIX);
-        if(!f.exists()) {
+        if (!f.exists()) {
             Panic.panic(Error.FileNotExistsException);
         }
-        if(!f.canRead() || !f.canWrite()) {
+        if (!f.canRead() || !f.canWrite()) {
             Panic.panic(Error.FileCannotRWException);
         }
 
@@ -66,6 +69,6 @@ public interface PageCache {
         } catch (FileNotFoundException e) {
            Panic.panic(e);
         }
-        return new PageCacheImpl(raf, fc, (int)memory/PAGE_SIZE);
+        return new PageCacheImpl(raf, fc, (int) memory / PAGE_SIZE);
     }
 }

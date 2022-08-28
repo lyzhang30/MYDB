@@ -32,7 +32,7 @@ public class CacheTest {
     }
 
     private void work() {
-        for(int i = 0; i < 1000; i++) {
+        for(int i = 0; i < 100000; i++) {
             long uid = random.nextInt();
             long h = 0;
             try {
@@ -41,8 +41,10 @@ public class CacheTest {
                 if(e == Error.CacheFullException) continue;
                 Panic.panic(e);
             }
+            //
             assert h == uid;
-            cache.release(h);
+            // 每次都移除掉这个数据
+            //cache.release(h);
         }
         cdl.countDown();
     }

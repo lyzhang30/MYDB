@@ -14,24 +14,24 @@ public abstract class AbstractCache<T> {
     /**
      * 实际缓存的数据
      */
-    private HashMap<Long, T> cache;
+    private final HashMap<Long, T> cache;
     /**
      * 元素的引用个数
      */
-    private HashMap<Long, Integer> references;
+    private final HashMap<Long, Integer> references;
     /**
      * 正在获取某资源的线程
      */
-    private HashMap<Long, Boolean> getting;
+    private final HashMap<Long, Boolean> getting;
     /**
      * 缓存的最大缓存资源数
      */
-    private int maxResource;
+    private final int maxResource;
     /**
      * 缓存中元素的个数
      */
     private int count = 0;
-    private Lock lock;
+    private final Lock lock;
 
     public AbstractCache(int maxResource) {
         this.maxResource = maxResource;
@@ -45,6 +45,7 @@ public abstract class AbstractCache<T> {
         while(true) {
             lock.lock();
             if(getting.containsKey(key)) {
+                System.out.println("key==>" + key + "的数据正在被其他线程获取");
                 // 请求的资源正在被其他线程获取
                 lock.unlock();
                 try {
@@ -57,14 +58,15 @@ public abstract class AbstractCache<T> {
             }
 
             if(cache.containsKey(key)) {
-                // 资源在缓存中，直接返回
+                // 资源在缓存中，直接返回，引用数+ 1
                 T obj = cache.get(key);
+                System.out.println("命中缓存==>" + obj);
                 references.put(key, references.get(key) + 1);
                 lock.unlock();
                 return obj;
             }
 
-            // 尝试获取该资源
+            // 尝试获取该资源，如果资源已经
             if(maxResource > 0 && count == maxResource) {
                 lock.unlock();
                 throw Error.CacheFullException;
@@ -101,7 +103,8 @@ public abstract class AbstractCache<T> {
     protected void release(long key) {
         lock.lock();
         try {
-            int ref = references.get(key)-1;
+            // 减掉当前这个引用，得到当前这个数据的被引用的次数
+            int ref = references.get(key) - 1;
             if(ref == 0) {
                 T obj = cache.get(key);
                 releaseForCache(obj);

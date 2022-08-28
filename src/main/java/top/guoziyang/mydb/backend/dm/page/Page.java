@@ -1,5 +1,8 @@
 package top.guoziyang.mydb.backend.dm.page;
 
+/**
+ * 页面的接口定义
+ */
 public interface Page {
     void lock();
     void unlock();

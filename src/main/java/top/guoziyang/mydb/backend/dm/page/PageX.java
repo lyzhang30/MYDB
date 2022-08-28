@@ -6,64 +6,83 @@ import top.guoziyang.mydb.backend.dm.pageCache.PageCache;
 import top.guoziyang.mydb.backend.utils.Parser;
 
 /**
+ * @author
  * PageX管理普通页
  * 普通页结构
  * [FreeSpaceOffset] [Data]
- * FreeSpaceOffset: 2字节 空闲位置开始偏移
+ * FreeSpaceOffset: 2字节 空闲位置开始偏移，剩余位置都是实际存储的数据
  */
 public class PageX {
-    
+
     private static final short OF_FREE = 0;
     private static final short OF_DATA = 2;
     public static final int MAX_FREE_SPACE = PageCache.PAGE_SIZE - OF_DATA;
 
+
     public static byte[] initRaw() {
         byte[] raw = new byte[PageCache.PAGE_SIZE];
-        setFSO(raw, OF_DATA);
+        setFreeSpaceOffset(raw, OF_DATA);
         return raw;
     }
 
-    private static void setFSO(byte[] raw, short ofData) {
+    /**
+     * FSO: Free Space Offset
+     */
+    private static void setFreeSpaceOffset(byte[] raw, short ofData) {
         System.arraycopy(Parser.short2Byte(ofData), 0, raw, OF_FREE, OF_DATA);
     }
 
-    // 获取pg的FSO
-    public static short getFSO(Page pg) {
-        return getFSO(pg.getData());
+    /**
+     * 获取page的FreeSpaceOffset
+     */
+    public static short getFreeSpaceOffset(Page page) {
+        return getFreeSpaceOffset(page.getData());
     }
 
-    private static short getFSO(byte[] raw) {
+    private static short getFreeSpaceOffset(byte[] raw) {
         return Parser.parseShort(Arrays.copyOfRange(raw, 0, 2));
     }
 
-    // 将raw插入pg中，返回插入位置
-    public static short insert(Page pg, byte[] raw) {
-        pg.setDirty(true);
-        short offset = getFSO(pg.getData());
-        System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
-        setFSO(pg.getData(), (short)(offset + raw.length));
+    /**
+     * 将raw插入page中，返回插入位置
+     */
+    public static short insert(Page page, byte[] raw) {
+        page.setDirty(true);
+        // 获取当前数据页的偏移量
+        short offset = getFreeSpaceOffset(page.getData());
+        System.arraycopy(raw, 0, page.getData(), offset, raw.length);
+        // 更新FreeSpaceOffset
+        setFreeSpaceOffset(page.getData(), (short) (offset + raw.length));
         return offset;
     }
 
-    // 获取页面的空闲空间大小
+    /**
+     * 获取页面的空闲空间大小
+     */
     public static int getFreeSpace(Page pg) {
-        return PageCache.PAGE_SIZE - (int)getFSO(pg.getData());
+        return PageCache.PAGE_SIZE - (int)getFreeSpaceOffset(pg.getData());
     }
 
-    // 将raw插入pg中的offset位置，并将pg的offset设置为较大的offset
-    public static void recoverInsert(Page pg, byte[] raw, short offset) {
-        pg.setDirty(true);
-        System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
+    /**
+     * 将raw插入page中的offset位置，并将page的offset设置为较大的offset
+     * 主要是在数据库崩溃的状态下使用的，恢复例程直接插入数据以及修改数据使用
+     */
+    public static void recoverInsert(Page page, byte[] raw, short offset) {
+        page.setDirty(true);
+        System.arraycopy(raw, 0, page.getData(), offset, raw.length);
 
-        short rawFSO = getFSO(pg.getData());
-        if(rawFSO < offset + raw.length) {
-            setFSO(pg.getData(), (short)(offset+raw.length));
+        short rawFreeSpaceOffset = getFreeSpaceOffset(page.getData());
+        if(rawFreeSpaceOffset < offset + raw.length) {
+            setFreeSpaceOffset(page.getData(), (short) (offset + raw.length));
         }
     }
 
-    // 将raw插入pg中的offset位置，不更新update
-    public static void recoverUpdate(Page pg, byte[] raw, short offset) {
-        pg.setDirty(true);
-        System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
+    /**
+     * 将raw插入page中的offset位置，不更新update
+     * 主要是在数据库崩溃的状态下使用的，恢复例程直接插入数据以及修改数据使用
+     */
+    public static void recoverUpdate(Page page, byte[] raw, short offset) {
+        page.setDirty(true);
+        System.arraycopy(raw, 0, page.getData(), offset, raw.length);
     }
 }

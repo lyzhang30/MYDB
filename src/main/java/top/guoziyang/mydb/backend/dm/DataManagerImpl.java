@@ -118,7 +118,9 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         di.page().release();
     }
 
-    // 在创建文件时初始化PageOne
+    /**
+     *  在创建文件时初始化PageOne
+     */
     void initPageOne() {
         int pgno = pc.newPage(PageOne.InitRaw());
         assert pgno == 1;
@@ -130,7 +132,9 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         pc.flushPage(pageOne);
     }
 
-    // 在打开已有文件时时读入PageOne，并验证正确性
+    /**
+     * 在打开已有文件时时读入PageOne，并验证正确性
+     **/
     boolean loadCheckPageOne() {
         try {
             pageOne = pc.getPage(1);
@@ -140,7 +144,9 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         return PageOne.checkVc(pageOne);
     }
 
-    // 初始化pageIndex
+    /**
+     * 初始化pageIndex
+     */
     void fillPageIndex() {
         int pageNumber = pc.getPageNumber();
         for(int i = 2; i <= pageNumber; i ++) {

@@ -15,7 +15,7 @@ public class TransactionManagerTest {
     static Random random = new SecureRandom();
 
     private int transCnt = 0;
-    private int noWorkers = 50;
+    private int noWorkers = 1;
     private int noWorks = 3000;
     private Lock lock = new ReentrantLock();
     private TransactionManager tmger;
@@ -28,15 +28,15 @@ public class TransactionManagerTest {
         transMap = new ConcurrentHashMap<>();
         cdl = new CountDownLatch(noWorkers);
         for(int i = 0; i < noWorkers; i ++) {
-            Runnable r = () -> worker();
-            new Thread(r).run();
+            Runnable r = this::worker;
+            new Thread(r).start();
         }
         try {
             cdl.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assert new File("D:/mydb/tranmger_test.xid").delete();
+        new File("D:/mydb/tranmger_test.xid").delete();
     }
 
     private void worker() {
@@ -44,12 +44,12 @@ public class TransactionManagerTest {
         long transXID = 0;
         for(int i = 0; i < noWorks; i ++) {
             int op = Math.abs(random.nextInt(6));
-            if(op == 0) {
+            if (op == 0) {
                 lock.lock();
-                if(inTrans == false) {
+                if (!inTrans) {
                     long xid = tmger.begin();
                     transMap.put(xid, (byte)0);
-                    transCnt ++;
+                    transCnt++;
                     transXID = xid;
                     inTrans = true;
                 } else {
@@ -68,8 +68,8 @@ public class TransactionManagerTest {
                 lock.unlock();
             } else {
                 lock.lock();
-                if(transCnt > 0) {
-                    long xid = (long)((random.nextInt(Integer.MAX_VALUE) % transCnt) + 1);
+                if (transCnt > 0) {
+                    long xid = (random.nextInt(Integer.MAX_VALUE) % transCnt) + 1;
                     byte status = transMap.get(xid);
                     boolean ok = false;
                     switch (status) {
@@ -87,7 +87,9 @@ public class TransactionManagerTest {
                 }
                 lock.unlock();
             }
+            System.out.println("第" + (i+1) +"\t op==>" + op +"\ttransXID==>" + transXID + "\t" + "inTrans ==>" + inTrans);
         }
+
         cdl.countDown();
     }
 }

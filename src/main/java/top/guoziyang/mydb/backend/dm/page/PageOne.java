@@ -26,6 +26,9 @@ public class PageOne {
         setVcOpen(pg.getData());
     }
 
+    /**
+     * 打开一个数据页时需要随机生成一段数字，放在100-107
+     */
     private static void setVcOpen(byte[] raw) {
         System.arraycopy(RandomUtil.randomBytes(LEN_VC), 0, raw, OF_VC, LEN_VC);
     }
@@ -35,15 +38,18 @@ public class PageOne {
         setVcClose(pg.getData());
     }
 
+    /**
+     * 关闭一个数据页时把前面生成的数字放在108-115
+     */
     private static void setVcClose(byte[] raw) {
-        System.arraycopy(raw, OF_VC, raw, OF_VC+LEN_VC, LEN_VC);
+        System.arraycopy(raw, OF_VC, raw, OF_VC + LEN_VC, LEN_VC);
     }
 
-    public static boolean checkVc(Page pg) {
-        return checkVc(pg.getData());
+    public static boolean checkVc(Page page) {
+        return checkVc(page.getData());
     }
 
     private static boolean checkVc(byte[] raw) {
-        return Arrays.equals(Arrays.copyOfRange(raw, OF_VC, OF_VC+LEN_VC), Arrays.copyOfRange(raw, OF_VC+LEN_VC, OF_VC+2*LEN_VC));
+        return Arrays.equals(Arrays.copyOfRange(raw, OF_VC, OF_VC + LEN_VC), Arrays.copyOfRange(raw, OF_VC + LEN_VC, OF_VC + 2*LEN_VC));
     }
 }

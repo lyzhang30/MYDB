@@ -210,7 +210,7 @@ public class Recover {
         byte[] logTypeRaw = {LOG_TYPE_INSERT};
         byte[] xidRaw = Parser.long2Byte(xid);
         byte[] pgnoRaw = Parser.int2Byte(pg.getPageNumber());
-        byte[] offsetRaw = Parser.short2Byte(PageX.getFSO(pg));
+        byte[] offsetRaw = Parser.short2Byte(PageX.getFreeSpaceOffset(pg));
         return Bytes.concat(logTypeRaw, xidRaw, pgnoRaw, offsetRaw, raw);
     }
 

@@ -89,7 +89,7 @@ public class TransactionManagerImpl implements TransactionManager {
     }
 
     /**
-     * 更新xid事务的状态为status
+     * 更新xid事务的状态为status，即在事务的3个提交状态中选择一个0，1，2
      */
     private void updateXID(long xid, byte status) {
         long offset = getXidPosition(xid);
@@ -112,7 +112,7 @@ public class TransactionManagerImpl implements TransactionManager {
     /**
      * 将XID加一，并更新XID Header
      */
-    private void incrXIDCounter() {
+    private void increaseXIDCounter() {
         xidCounter++;
         ByteBuffer buf = ByteBuffer.wrap(Parser.long2Byte(xidCounter));
         try {
@@ -136,12 +136,13 @@ public class TransactionManagerImpl implements TransactionManager {
     public long begin() {
         counterLock.lock();
         try {
-            //
+            // 对事务计数器的id加1
             long xid = xidCounter + 1;
             updateXID(xid, FIELD_TRAN_ACTIVE);
-            incrXIDCounter();
+            increaseXIDCounter();
             return xid;
         } finally {
+            // 释放锁
             counterLock.unlock();
         }
     }
