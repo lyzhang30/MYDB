@@ -1,5 +1,11 @@
-# MYDB
 
+# 声明
+本项目是从一位博主的仓库fork来的，博主的博客地址在https://ziyang.moe/，
+而且博主的文章写的很详细，这里的代码只是我学习时稍微对其进行修改，并加上一些注释
+----
+项目的地址：https://github.com/CN-GuoZiyang/MYDB <br/>
+我只是搬运到了我的仓库
+# MYDB
 MYDB 是一个 Java 实现的简单的数据库，部分原理参照自 MySQL、PostgreSQL 和 SQLite。实现了以下功能：
 
 - 数据的可靠性和数据恢复
