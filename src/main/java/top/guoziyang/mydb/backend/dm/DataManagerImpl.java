@@ -43,6 +43,7 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
 
     @Override
     public long insert(long xid, byte[] data) throws Exception {
+        // 从pageIndex中获取一个足以存储插入内容的页面的页号，获取页面后，
         byte[] raw = DataItem.wrapDataItemRaw(data);
         if(raw.length > PageX.MAX_FREE_SPACE) {
             throw Error.DataTooLargeException;
@@ -65,10 +66,11 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         Page pg = null;
         int freeSpace = 0;
         try {
+            // 首先需要写入插入日志
             pg = pc.getPage(pi.pgno);
             byte[] log = Recover.insertLog(xid, pg, raw);
             logger.log(log);
-
+            // 通过pageX插入数据，并插入位置的偏移
             short offset = PageX.insert(pg, raw);
 
             pg.release();
@@ -84,8 +86,12 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         }
     }
 
-    @Override
-    public void close() {
+  /**
+   *
+   * <p>DataManager 正常关闭时，需要执行缓存和日志的关闭流程，不要忘了设置第一页的字节校验：
+   */
+  @Override
+  public void close() {
         super.close();
         logger.close();
 

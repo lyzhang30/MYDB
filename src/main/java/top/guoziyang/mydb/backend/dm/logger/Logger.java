@@ -22,7 +22,7 @@ public interface Logger {
      * 创建一个日志文件
      */
     public static Logger create(String path) {
-        File f = new File(path+LoggerImpl.LOG_SUFFIX);
+        File f = new File(path + LoggerImpl.LOG_SUFFIX);
         try {
             if(!f.createNewFile()) {
                 Panic.panic(Error.FileExistsException);

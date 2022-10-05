@@ -48,6 +48,9 @@ public class DataItemImpl implements DataItem {
         return new SubArray(raw.raw, raw.start+OF_DATA, raw.end);
     }
 
+    /**
+     * 修改前调用
+     */
     @Override
     public void before() {
         wLock.lock();
@@ -55,18 +58,28 @@ public class DataItemImpl implements DataItem {
         System.arraycopy(raw.raw, raw.start, oldRaw, 0, oldRaw.length);
     }
 
+    /**
+     * 撤销修改时，调用该该方法
+     */
     @Override
     public void unBefore() {
         System.arraycopy(oldRaw, 0, raw.raw, raw.start, oldRaw.length);
         wLock.unlock();
     }
 
+    /**
+     * 修改完成，对修改操作落日志
+     * @param xid
+     */
     @Override
     public void after(long xid) {
         dm.logDataItem(xid, this);
         wLock.unlock();
     }
 
+    /**
+     * 使用完成后ishi调用release方法，释放DataItem的缓存
+     */
     @Override
     public void release() {
         dm.releaseDataItem(this);

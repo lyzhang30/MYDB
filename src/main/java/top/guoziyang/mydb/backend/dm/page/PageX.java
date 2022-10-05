@@ -65,7 +65,7 @@ public class PageX {
 
     /**
      * 将raw插入page中的offset位置，并将page的offset设置为较大的offset
-     * 主要是在数据库崩溃的状态下使用的，恢复例程直接插入数据以及修改数据使用
+     * 主要是在数据库崩溃的状态下使用的，将
      */
     public static void recoverInsert(Page page, byte[] raw, short offset) {
         page.setDirty(true);

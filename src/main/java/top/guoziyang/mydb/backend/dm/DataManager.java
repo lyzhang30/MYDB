@@ -13,6 +13,7 @@ public interface DataManager {
 
     public static DataManager create(String path, long mem, TransactionManager tm) {
 
+        // 对第一页进行初始化
         PageCache pc = PageCache.create(path, mem);
         // 创建保存数据库日志的文件
         Logger lg = Logger.create(path);
@@ -27,6 +28,7 @@ public interface DataManager {
         PageCache pc = PageCache.open(path, mem);
         Logger lg = Logger.open(path);
         DataManagerImpl dm = new DataManagerImpl(pc, lg, tm);
+        // 对第一页进行校验，判断是否需要执行恢复流程
         if(!dm.loadCheckPageOne()) {
             Recover.recover(tm, lg, pc);
         }

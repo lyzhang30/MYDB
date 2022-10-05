@@ -34,16 +34,21 @@ public class PageIndex {
         }
     }
 
+
     public PageInfo select(int spaceSize) {
         lock.lock();
         try {
+            // 算出区间号
             int number = spaceSize / THRESHOLD;
-            if(number < INTERVALS_NO) number ++;
-            while(number <= INTERVALS_NO) {
-                if(lists[number].size() == 0) {
+            if (number < INTERVALS_NO) {
+                number ++;
+            }
+            while (number <= INTERVALS_NO) {
+                if (lists[number].size() == 0) {
                     number ++;
                     continue;
                 }
+                // 从PageIndex中移除， 意味着同一个页面时不允许并发写的，上层模块使用完这个页面后，需要手动插入回来
                 return lists[number].remove(0);
             }
             return null;

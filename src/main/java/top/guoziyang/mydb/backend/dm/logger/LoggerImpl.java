@@ -27,11 +27,19 @@ import top.guoziyang.mydb.common.Error;
  * Checksum 4字节int
  */
 public class LoggerImpl implements Logger {
-
+    /**
+     * 种子
+     */
     private static final int SEED = 13331;
 
     private static final int OF_SIZE = 0;
+    /**
+     * 校验和4字节位
+     */
     private static final int OF_CHECKSUM = OF_SIZE + 4;
+    /**
+     * 日志文件开始的偏移位4字节
+     */
     private static final int OF_DATA = OF_CHECKSUM + 4;
     
     public static final String LOG_SUFFIX = ".log";
@@ -39,15 +47,18 @@ public class LoggerImpl implements Logger {
     private RandomAccessFile file;
     private FileChannel fc;
     private Lock lock;
+
     /**
      * 当前日志指针的位置
      */
-
     private long position;
     /**
      * 初始化时记录，log操作不更新
      */
     private long fileSize;
+    /**
+     * 校验和
+     */
     private int xChecksum;
 
     LoggerImpl(RandomAccessFile raf, FileChannel fc) {
@@ -89,7 +100,7 @@ public class LoggerImpl implements Logger {
     }
 
     /**
-     * 检查并移除bad tail
+     * 检查并移除bad tail, 先检查XCheckSum, 并删除文件尾部可能存在的BadTail，由于BadTail这条日志还没
      */
     private void checkAndRemoveTail() {
         rewind();
@@ -97,7 +108,9 @@ public class LoggerImpl implements Logger {
         int xCheck = 0;
         while(true) {
             byte[] log = internNext();
-            if(log == null) break;
+            if (log == null) {
+                break;
+            }
             xCheck = calChecksum(xCheck, log);
         }
         if(xCheck != xChecksum) {
@@ -105,6 +118,7 @@ public class LoggerImpl implements Logger {
         }
 
         try {
+            // 截断到文件正常日志文件的末尾
             truncate(position);
         } catch (Exception e) {
             Panic.panic(e);
@@ -117,6 +131,9 @@ public class LoggerImpl implements Logger {
         rewind();
     }
 
+    /**
+     * 计算校验和
+     */
     private int calChecksum(int xCheck, byte[] log) {
         for (byte b : log) {
             xCheck = xCheck * SEED + b;
@@ -124,6 +141,10 @@ public class LoggerImpl implements Logger {
         return xCheck;
     }
 
+    /**
+     * 向文件中写入日志时，也需要首先将数据封装成日志格式，写入文件时，再检查日志的校验和，更新校验和时
+     * 会刷新缓存区，保证日志能够刷新到磁盘
+     */
     @Override
     public void log(byte[] data) {
         byte[] log = wrapLog(data);
@@ -137,8 +158,10 @@ public class LoggerImpl implements Logger {
         } finally {
             lock.unlock();
         }
+        // 更新日志的校验和
         updateXChecksum(log);
     }
+
 
     private void updateXChecksum(byte[] log) {
         this.xChecksum = calChecksum(this.xChecksum, log);
@@ -171,6 +194,7 @@ public class LoggerImpl implements Logger {
         if(position + OF_DATA >= fileSize) {
             return null;
         }
+        // 读取size
         ByteBuffer tmp = ByteBuffer.allocate(4);
         try {
             fc.position(position);
@@ -182,7 +206,7 @@ public class LoggerImpl implements Logger {
         if(position + size + OF_DATA > fileSize) {
             return null;
         }
-
+        // 读取checksum + data
         ByteBuffer buf = ByteBuffer.allocate(OF_DATA + size);
         try {
             fc.position(position);
@@ -191,6 +215,7 @@ public class LoggerImpl implements Logger {
             Panic.panic(e);
         }
 
+        // 校验 checksum
         byte[] log = buf.array();
         int checkSum1 = calChecksum(0, Arrays.copyOfRange(log, OF_DATA, log.length));
         int checkSum2 = Parser.parseInt(Arrays.copyOfRange(log, OF_CHECKSUM, OF_DATA));
@@ -206,7 +231,9 @@ public class LoggerImpl implements Logger {
         lock.lock();
         try {
             byte[] log = internNext();
-            if(log == null) return null;
+            if (log == null) {
+                return null;
+            }
             return Arrays.copyOfRange(log, OF_DATA, log.length);
         } finally {
             lock.unlock();
