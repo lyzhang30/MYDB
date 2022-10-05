@@ -21,16 +21,23 @@ public class Visibility {
         }
     }
 
+    /**
+     * 读已提交
+     */
     private static boolean readCommitted(TransactionManager tm, Transaction t, Entry e) {
         long xid = t.xid;
         long xmin = e.getXmin();
         long xmax = e.getXmax();
-        if(xmin == xid && xmax == 0) return true;
+        if (xmin == xid && xmax == 0) {
+            return true;
+        }
 
-        if(tm.isCommitted(xmin)) {
-            if(xmax == 0) return true;
-            if(xmax != xid) {
-                if(!tm.isCommitted(xmax)) {
+        if (tm.isCommitted(xmin)) {
+            if (xmax == 0) {
+                return true;
+            }
+            if (xmax != xid) {
+                if (!tm.isCommitted(xmax)) {
                     return true;
                 }
             }
@@ -38,16 +45,23 @@ public class Visibility {
         return false;
     }
 
+    /**
+     * 可重复读
+     */
     private static boolean repeatableRead(TransactionManager tm, Transaction t, Entry e) {
         long xid = t.xid;
         long xmin = e.getXmin();
         long xmax = e.getXmax();
-        if(xmin == xid && xmax == 0) return true;
+        if (xmin == xid && xmax == 0) {
+            return true;
+        }
 
-        if(tm.isCommitted(xmin) && xmin < xid && !t.isInSnapshot(xmin)) {
-            if(xmax == 0) return true;
-            if(xmax != xid) {
-                if(!tm.isCommitted(xmax) || xmax > xid || t.isInSnapshot(xmax)) {
+        if (tm.isCommitted(xmin) && xmin < xid && !t.isInSnapshot(xmin)) {
+            if (xmax == 0) {
+                return true;
+            }
+            if (xmax != xid) {
+                if (!tm.isCommitted(xmax) || xmax > xid || t.isInSnapshot(xmax)) {
                     return true;
                 }
             }

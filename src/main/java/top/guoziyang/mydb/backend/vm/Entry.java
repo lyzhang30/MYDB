@@ -15,11 +15,23 @@ import top.guoziyang.mydb.backend.utils.Parser;
  */
 public class Entry {
 
+    /**
+     * 创建该条记录（版本）的事务编号
+     */
     private static final int OF_XMIN = 0;
-    private static final int OF_XMAX = OF_XMIN+8;
-    private static final int OF_DATA = OF_XMAX+8;
+    /**
+     * 删除该条记录（版本）的事务编号
+     */
+    private static final int OF_XMAX = OF_XMIN + 8;
+    /**
+     * 持有的数据
+     */
+    private static final int OF_DATA = OF_XMAX + 8;
 
     private long uid;
+    /**
+     * 一条记录保存在一个Data Item中，所以Entry中保存一个DataItem的引用即可。
+     */
     private DataItem dataItem;
     private VersionManager vm;
 
@@ -56,7 +68,7 @@ public class Entry {
         try {
             SubArray sa = dataItem.data();
             byte[] data = new byte[sa.end - sa.start - OF_DATA];
-            System.arraycopy(sa.raw, sa.start+OF_DATA, data, 0, data.length);
+            System.arraycopy(sa.raw, sa.start + OF_DATA, data, 0, data.length);
             return data;
         } finally {
             dataItem.rUnLock();
@@ -84,11 +96,13 @@ public class Entry {
     }
 
     public void setXmax(long xid) {
+        // 需要修改的话，先对DataItem执行before方法
         dataItem.before();
         try {
             SubArray sa = dataItem.data();
-            System.arraycopy(Parser.long2Byte(xid), 0, sa.raw, sa.start+OF_XMAX, 8);
+            System.arraycopy(Parser.long2Byte(xid), 0, sa.raw, sa.start + OF_XMAX, 8);
         } finally {
+            // 修改完成后
             dataItem.after(xid);
         }
     }
