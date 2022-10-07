@@ -13,17 +13,23 @@ import top.guoziyang.mydb.backend.utils.Parser;
  * Node结构如下：
  * [LeafFlag][KeyNumber][SiblingUid]
  * [Son0][Key0][Son1][Key1]...[SonN][KeyN]
+ * <br>
+ * 其中 LeafFlag 标记了该节点是否是个叶子节点 KeyNumber 为该节点中 key 的个数 SiblingUid 是其兄弟节点存储在 DM 中的 UID
+ * <p>后续是穿插的子节点（SonN）和 KeyN。最后的一个 KeyN 始终为 MAX_VALUE，以此方便查找
  */
 public class Node {
     static final int IS_LEAF_OFFSET = 0;
-    static final int NO_KEYS_OFFSET = IS_LEAF_OFFSET+1;
-    static final int SIBLING_OFFSET = NO_KEYS_OFFSET+2;
-    static final int NODE_HEADER_SIZE = SIBLING_OFFSET+8;
-
+    static final int NO_KEYS_OFFSET = IS_LEAF_OFFSET + 1;
+    static final int SIBLING_OFFSET = NO_KEYS_OFFSET + 2;
+    static final int NODE_HEADER_SIZE = SIBLING_OFFSET + 8;
     static final int BALANCE_NUMBER = 32;
-    static final int NODE_SIZE = NODE_HEADER_SIZE + (2*8)*(BALANCE_NUMBER*2+2);
+    static final int NODE_SIZE = NODE_HEADER_SIZE + (2 * 8) * (BALANCE_NUMBER * 2 + 2);
 
+    /**
+     * B+ tree
+     */
     BPlusTree tree;
+
     DataItem dataItem;
     SubArray raw;
     long uid;
@@ -95,6 +101,7 @@ public class Node {
         setRawIsLeaf(raw, false);
         setRawNoKeys(raw, 2);
         setRawSibling(raw, 0);
+        // 两个初始子节点left和right，初始值为key
         setRawKthSon(raw, left, 0);
         setRawKthKey(raw, key, 0);
         setRawKthSon(raw, right, 1);
@@ -145,6 +152,7 @@ public class Node {
     public SearchNextRes searchNext(long key) {
         dataItem.rLock();
         try {
+            // 用于B+树做搜索操作
             SearchNextRes res = new SearchNextRes();
             int noKeys = getRawNoKeys(raw);
             for(int i = 0; i < noKeys; i ++) {
@@ -169,7 +177,9 @@ public class Node {
         long siblingUid;
     }
 
+
     public LeafSearchRangeRes leafSearchRange(long leftKey, long rightKey) {
+        // [leftKey, rightKey]
         dataItem.rLock();
         try {
             int noKeys = getRawNoKeys(raw);
@@ -253,7 +263,9 @@ public class Node {
                 break;
             }
         }
-        if(kth == noKeys && getRawSibling(raw) != 0) return false;
+        if (kth == noKeys && getRawSibling(raw) != 0) {
+            return false;
+        }
 
         if(getRawIfLeaf(raw)) {
             shiftRawKth(raw, kth);

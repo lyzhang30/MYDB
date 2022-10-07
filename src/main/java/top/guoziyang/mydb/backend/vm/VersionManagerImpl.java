@@ -30,6 +30,9 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         this.lt = new LockTable();
     }
 
+    /**
+     * 方法读取一个 entry
+     */
     @Override
     public byte[] read(long xid, long uid) throws Exception {
         lock.lock();
@@ -137,6 +140,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         try {
             long xid = tm.begin();
             Transaction t = Transaction.newTransaction(xid, level, activeTransaction);
+            // 用于检查和快照使用
             activeTransaction.put(xid, t);
             return xid;
         } finally {
@@ -144,6 +148,9 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         }
     }
 
+    /**
+     * 提交一个事务，free掉相关的结构，并且释放持有的锁，并修改TM的状态
+     */
     @Override
     public void commit(long xid) throws Exception {
         lock.lock();
@@ -168,8 +175,12 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         tm.commit(xid);
     }
 
-    @Override
-    public void abort(long xid) {
+  /**
+   * 手动和自动。
+   * 手动指的是调用 abort() 方法，而自动，则是在事务被检测出出现死锁时，会自动撤销回滚事务；或者出现版本跳跃时，也会自动回滚
+   */
+  @Override
+  public void abort(long xid) {
         internAbort(xid, false);
     }
 

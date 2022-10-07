@@ -15,6 +15,9 @@ import top.guoziyang.mydb.backend.im.Node.SearchNextRes;
 import top.guoziyang.mydb.backend.tm.TransactionManagerImpl;
 import top.guoziyang.mydb.backend.utils.Parser;
 
+/**
+ * B+树
+ */
 public class BPlusTree {
     DataManager dm;
     long bootUid;

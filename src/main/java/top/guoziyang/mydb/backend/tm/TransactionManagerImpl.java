@@ -63,7 +63,8 @@ public class TransactionManagerImpl implements TransactionManager {
         } catch (IOException e1) {
             Panic.panic(Error.BadXIDFileException);
         }
-        if(fileLen < LEN_XID_HEADER_LENGTH) {
+        // 根据文件头的8字节数字可以反推文件的理论长度，与文件的实际长度做对比
+        if (fileLen < LEN_XID_HEADER_LENGTH) {
             Panic.panic(Error.BadXIDFileException);
         }
 
@@ -76,7 +77,7 @@ public class TransactionManagerImpl implements TransactionManager {
         }
         this.xidCounter = Parser.parseLong(buf.array());
         long end = getXidPosition(this.xidCounter + 1);
-        if(end != fileLen) {
+        if (end != fileLen) {
             Panic.panic(Error.BadXIDFileException);
         }
     }
