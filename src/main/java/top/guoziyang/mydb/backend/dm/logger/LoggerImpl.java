@@ -15,16 +15,18 @@ import top.guoziyang.mydb.backend.utils.Parser;
 import top.guoziyang.mydb.common.Error;
 
 /**
+ * @author
  * 日志文件读写
  * 
  * 日志文件标准格式为：
  * [XChecksum] [Log1] [Log2] ... [LogN] [BadTail]
  * XChecksum 为后续所有日志计算的Checksum，int类型
- * 
- * 每条正确日志的格式为：
+ * BadTail不一定来的及写完，不一定存在
+ *
+ * 每条正确日志的格式为：Log
  * [Size] [Checksum] [Data]
- * Size 4字节int 标识Data长度
- * Checksum 4字节int
+ * Size 4字节int 标识Data长度的字节数
+ * Checksum 4字节int，该地址的校验和
  */
 public class LoggerImpl implements Logger {
     /**
@@ -38,7 +40,7 @@ public class LoggerImpl implements Logger {
      */
     private static final int OF_CHECKSUM = OF_SIZE + 4;
     /**
-     * 日志文件开始的偏移位4字节
+     * 日志文件开始的偏移位4字节，8开始
      */
     private static final int OF_DATA = OF_CHECKSUM + 4;
     
@@ -100,11 +102,11 @@ public class LoggerImpl implements Logger {
     }
 
     /**
+     * 打开一个日志文件时
      * 检查并移除bad tail, 先检查XCheckSum, 并删除文件尾部可能存在的BadTail，由于BadTail这条日志还没
      */
     private void checkAndRemoveTail() {
         rewind();
-
         int xCheck = 0;
         while(true) {
             byte[] log = internNext();
@@ -190,8 +192,12 @@ public class LoggerImpl implements Logger {
         }
     }
 
+    /**
+     * 需要对数据文件进行校验查看日志文件的校验和是否相同
+     * @return  获取下一个日志文件，
+     */
     private byte[] internNext() {
-        if(position + OF_DATA >= fileSize) {
+        if (position + OF_DATA >= fileSize) {
             return null;
         }
         // 读取size
@@ -206,7 +212,7 @@ public class LoggerImpl implements Logger {
         if(position + size + OF_DATA > fileSize) {
             return null;
         }
-        // 读取checksum + data
+        // 读取checksum
         ByteBuffer buf = ByteBuffer.allocate(OF_DATA + size);
         try {
             fc.position(position);
@@ -226,6 +232,10 @@ public class LoggerImpl implements Logger {
         return log;
     }
 
+    /**
+     * 实现成迭代器模式，
+     * @return 日志文件
+     */
     @Override
     public byte[] next() {
         lock.lock();
