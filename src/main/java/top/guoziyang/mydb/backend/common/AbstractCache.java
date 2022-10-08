@@ -44,7 +44,8 @@ public abstract class AbstractCache<T> {
     protected T get(long key) throws Exception {
         while(true) {
             lock.lock();
-            if(getting.containsKey(key)) {
+            // 查看是否有进程正在获取这个资源
+            if (getting.containsKey(key)) {
                 System.out.println("key==>" + key + "的数据正在被其他线程获取");
                 // 请求的资源正在被其他线程获取
                 lock.unlock();
@@ -57,8 +58,8 @@ public abstract class AbstractCache<T> {
                 continue;
             }
 
-            if(cache.containsKey(key)) {
-                // 资源在缓存中，直接返回，引用数+ 1
+            if (cache.containsKey(key)) {
+                // 资源在缓存中，直接返回，引用数 + 1
                 T obj = cache.get(key);
                 System.out.println("命中缓存==>" + obj);
                 references.put(key, references.get(key) + 1);
@@ -66,12 +67,13 @@ public abstract class AbstractCache<T> {
                 return obj;
             }
 
-            // 尝试获取该资源，如果资源已经
+            // 尝试获取该资源，如果资源已经达到缓存的最大资源值
             if(maxResource > 0 && count == maxResource) {
                 lock.unlock();
                 throw Error.CacheFullException;
             }
             count ++;
+            // 当前这个资源正在被某线程获取
             getting.put(key, true);
             lock.unlock();
             break;
@@ -89,8 +91,10 @@ public abstract class AbstractCache<T> {
         }
 
         lock.lock();
+        // 读取完资源后就把正在获取的资源删除掉，加入到缓存中
         getting.remove(key);
         cache.put(key, obj);
+        // 设置初始引用值
         references.put(key, 1);
         lock.unlock();
         
@@ -98,7 +102,8 @@ public abstract class AbstractCache<T> {
     }
 
     /**
-     * 强行释放一个缓存
+     * 当某个线程对这个资源不在使用后，就释放对资源的引用，当引用归零后，就驱逐这个资源
+     *
      */
     protected void release(long key) {
         lock.lock();
@@ -108,8 +113,11 @@ public abstract class AbstractCache<T> {
             if(ref == 0) {
                 T obj = cache.get(key);
                 releaseForCache(obj);
+                // 从引用中移除
                 references.remove(key);
+                // 从缓存中移除
                 cache.remove(key);
+                // 元素个数减少
                 count --;
             } else {
                 references.put(key, ref);

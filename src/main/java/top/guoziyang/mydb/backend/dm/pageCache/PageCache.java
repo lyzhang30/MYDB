@@ -9,6 +9,9 @@ import top.guoziyang.mydb.backend.dm.page.Page;
 import top.guoziyang.mydb.backend.utils.Panic;
 import top.guoziyang.mydb.common.Error;
 
+/**
+ * 缓存
+ */
 public interface PageCache {
     
     int PAGE_SIZE = 1 << 13;
@@ -28,13 +31,13 @@ public interface PageCache {
     static PageCacheImpl create(String path, long memory) {
         File f = new File(path + PageCacheImpl.DB_SUFFIX);
         try {
-            if(!f.createNewFile()) {
+            if (!f.createNewFile()) {
                 Panic.panic(Error.FileExistsException);
             }
         } catch (Exception e) {
             Panic.panic(e);
         }
-        if(!f.canRead() || !f.canWrite()) {
+        if (!f.canRead() || !f.canWrite()) {
             Panic.panic(Error.FileCannotRWException);
         }
 
