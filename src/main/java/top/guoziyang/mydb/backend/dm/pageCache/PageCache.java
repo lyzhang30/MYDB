@@ -13,7 +13,7 @@ import top.guoziyang.mydb.common.Error;
  * 缓存
  */
 public interface PageCache {
-    
+
     int PAGE_SIZE = 1 << 13;
 
     int newPage(byte[] initData);

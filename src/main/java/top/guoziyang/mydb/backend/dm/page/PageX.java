@@ -18,7 +18,6 @@ public class PageX {
     private static final short OF_DATA = 2;
     public static final int MAX_FREE_SPACE = PageCache.PAGE_SIZE - OF_DATA;
 
-
     public static byte[] initRaw() {
         byte[] raw = new byte[PageCache.PAGE_SIZE];
         setFreeSpaceOffset(raw, OF_DATA);
@@ -40,6 +39,7 @@ public class PageX {
     }
 
     private static short getFreeSpaceOffset(byte[] raw) {
+        // 获取已经使用的缓存空间
         return Parser.parseShort(Arrays.copyOfRange(raw, 0, 2));
     }
 
@@ -47,8 +47,9 @@ public class PageX {
      * 将raw插入page中，返回插入位置
      */
     public static short insert(Page page, byte[] raw) {
+        // 设置当前为脏数据页
         page.setDirty(true);
-        // 获取当前数据页的偏移量
+        // 获取当前数据页已经使用的偏移量
         short offset = getFreeSpaceOffset(page.getData());
         System.arraycopy(raw, 0, page.getData(), offset, raw.length);
         // 更新FreeSpaceOffset
@@ -79,7 +80,7 @@ public class PageX {
 
     /**
      * 将raw插入page中的offset位置，不更新update
-     * 主要是在数据库崩溃的状态下使用的，恢复例程直接插入数据以及修改数据使用
+     * 主要是在数据库崩溃的状态下使用的，恢复例程以及修改数据使用
      */
     public static void recoverUpdate(Page page, byte[] raw, short offset) {
         page.setDirty(true);

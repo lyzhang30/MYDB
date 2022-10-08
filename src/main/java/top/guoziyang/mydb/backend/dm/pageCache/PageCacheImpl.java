@@ -58,7 +58,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
     }
 
     /**
-     * 根据pageNumber从数据库文件中读取页数据，并包裹成Page
+     * 根据pageNumber从数据库文件中读取页数据，并包裹成Page，第key页
      */
     @Override
     protected Page getForCache(long key) throws Exception {
@@ -82,7 +82,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
      */
     @Override
     protected void releaseForCache(Page page) {
-        if(page.isDirty()) {
+        if (page.isDirty()) {
             flush(page);
             page.setDirty(false);
         }
@@ -106,8 +106,9 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
             ByteBuffer buf = ByteBuffer.wrap(page.getData());
             fc.position(offset);
             fc.write(buf);
+            // 强制刷新
             fc.force(false);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         } finally {
             fileLock.unlock();
@@ -141,6 +142,11 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
         return pageNumbers.intValue();
     }
 
+    /**
+     * 页号从1开始
+     * @param pageNo 页号
+     * @return 偏移量
+     */
     private static long pageOffset(int pageNo) {
         return (long) (pageNo - 1) * PAGE_SIZE;
     }

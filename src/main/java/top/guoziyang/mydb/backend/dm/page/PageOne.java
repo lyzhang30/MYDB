@@ -12,6 +12,7 @@ import top.guoziyang.mydb.backend.utils.RandomUtil;
  * 用于判断上一次数据库是否正常关闭
  */
 public class PageOne {
+
     private static final int OF_VC = 100;
     private static final int LEN_VC = 8;
 
@@ -21,6 +22,10 @@ public class PageOne {
         return raw;
     }
 
+    /**
+     * 启动时设置初始字节
+     * @param pg 数据页信息
+     */
     public static void setVcOpen(Page pg) {
         pg.setDirty(true);
         setVcOpen(pg.getData());
@@ -33,6 +38,10 @@ public class PageOne {
         System.arraycopy(RandomUtil.randomBytes(LEN_VC), 0, raw, OF_VC, LEN_VC);
     }
 
+    /**
+     * 关闭时
+     * @param pg 数据页信息
+     */
     public static void setVcClose(Page pg) {
         pg.setDirty(true);
         setVcClose(pg.getData());
@@ -45,11 +54,13 @@ public class PageOne {
         System.arraycopy(raw, OF_VC, raw, OF_VC + LEN_VC, LEN_VC);
     }
 
+
     public static boolean checkVc(Page page) {
+        // 校验字节，具体的校验方法通过100-107字节和108-115字节的数据是否相等
         return checkVc(page.getData());
     }
 
     private static boolean checkVc(byte[] raw) {
-        return Arrays.equals(Arrays.copyOfRange(raw, OF_VC, OF_VC + LEN_VC), Arrays.copyOfRange(raw, OF_VC + LEN_VC, OF_VC + 2*LEN_VC));
+        return Arrays.equals(Arrays.copyOfRange(raw, OF_VC, OF_VC + LEN_VC), Arrays.copyOfRange(raw, OF_VC + LEN_VC, OF_VC + 2 * LEN_VC));
     }
 }
