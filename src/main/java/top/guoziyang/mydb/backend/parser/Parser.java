@@ -351,7 +351,7 @@ public class Parser {
         create.fieldType = fTypes.toArray(new String[fTypes.size()]);
 
         tokenizer.pop();
-        if(!"index".equals(tokenizer.peek())) {
+        if (!"index".equals(tokenizer.peek())) {
             throw Error.InvalidCommandException;
         }
 

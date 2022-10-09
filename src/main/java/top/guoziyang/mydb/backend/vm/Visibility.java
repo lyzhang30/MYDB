@@ -6,7 +6,8 @@ public class Visibility {
     
     public static boolean isVersionSkip(TransactionManager tm, Transaction t, Entry e) {
         long xmax = e.getXmax();
-        if(t.level == 0) {
+        // 检查是否为版本跳跃
+        if (t.level == 0) {
             return false;
         } else {
             return tm.isCommitted(xmax) && (xmax > t.xid || t.isInSnapshot(xmax));

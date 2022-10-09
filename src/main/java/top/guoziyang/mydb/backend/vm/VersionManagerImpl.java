@@ -84,23 +84,25 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         Transaction t = activeTransaction.get(xid);
         lock.unlock();
 
-        if(t.err != null) {
+        if (t.err != null) {
             throw t.err;
         }
         Entry entry = null;
         try {
             entry = super.get(uid);
         } catch(Exception e) {
-            if(e == Error.NullEntryException) {
+            if (e == Error.NullEntryException) {
                 return false;
             } else {
                 throw e;
             }
         }
         try {
-            if(!Visibility.isVisible(tm, t, entry)) {
+            // 可见性判断
+            if (!Visibility.isVisible(tm, t, entry)) {
                 return false;
             }
+            // 获取资源的锁
             Lock l = null;
             try {
                 l = lt.add(xid, uid);
@@ -110,16 +112,17 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
                 t.autoAborted = true;
                 throw t.err;
             }
-            if(l != null) {
+
+            if (l != null) {
                 l.lock();
                 l.unlock();
             }
 
-            if(entry.getXmax() == xid) {
+            if (entry.getXmax() == xid) {
                 return false;
             }
-
-            if(Visibility.isVersionSkip(tm, t, entry)) {
+            // 版本跳跃判断
+            if (Visibility.isVersionSkip(tm, t, entry)) {
                 t.err = Error.ConcurrentUpdateException;
                 internAbort(xid, true);
                 t.autoAborted = true;
@@ -187,12 +190,14 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
     private void internAbort(long xid, boolean autoAborted) {
         lock.lock();
         Transaction t = activeTransaction.get(xid);
-        if(!autoAborted) {
+        if (!autoAborted) {
             activeTransaction.remove(xid);
         }
         lock.unlock();
 
-        if (t.autoAborted) return;
+        if (t.autoAborted) {
+            return;
+        }
         lt.remove(xid);
         tm.abort(xid);
     }
