@@ -8,7 +8,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import top.guoziyang.mydb.backend.dm.pageCache.PageCache;
 
 public class PageIndex {
-    // 将一页划成40个区间
+    /**
+     * 将一页划成40个区间
+     */
     private static final int INTERVALS_NO = 40;
     private static final int THRESHOLD = PageCache.PAGE_SIZE / INTERVALS_NO;
 
@@ -28,6 +30,7 @@ public class PageIndex {
         lock.lock();
         try {
             int number = freeSpace / THRESHOLD;
+            // 上层模块使用完这个页面后，需要手动插入回来
             lists[number].add(new PageInfo(pgno, freeSpace));
         } finally {
             lock.unlock();
@@ -48,7 +51,7 @@ public class PageIndex {
                     number ++;
                     continue;
                 }
-                // 从PageIndex中移除， 意味着同一个页面时不允许并发写的，上层模块使用完这个页面后，需要手动插入回来
+                // 从PageIndex中移除， 意味着同一个页面时不允许并发写的，
                 return lists[number].remove(0);
             }
             return null;

@@ -31,15 +31,19 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         this.pIndex = new PageIndex();
     }
 
+    /**
+     * 从缓存中获取DataItem，并校验有效位
+     */
     @Override
     public DataItem read(long uid) throws Exception {
-        DataItemImpl di = (DataItemImpl)super.get(uid);
-        if(!di.isValid()) {
+        DataItemImpl di = (DataItemImpl) super.get(uid);
+        if (!di.isValid()) {
             di.release();
             return null;
         }
         return di;
     }
+
 
     @Override
     public long insert(long xid, byte[] data) throws Exception {
@@ -100,7 +104,9 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         pc.close();
     }
 
-    // 为xid生成update日志
+    /**
+     *  为xid生成update日志
+     */
     public void logDataItem(long xid, DataItem di) {
         byte[] log = Recover.updateLog(xid, di);
         logger.log(log);

@@ -24,6 +24,9 @@ public class DataItemImpl implements DataItem {
     private byte[] oldRaw;
     private Lock rLock;
     private Lock wLock;
+    /**
+     * 因为其释放依赖dm的释放
+     */
     private DataManagerImpl dm;
     private long uid;
     private Page pg;
@@ -45,7 +48,7 @@ public class DataItemImpl implements DataItem {
 
     @Override
     public SubArray data() {
-        return new SubArray(raw.raw, raw.start+OF_DATA, raw.end);
+        return new SubArray(raw.raw, raw.start + OF_DATA, raw.end);
     }
 
     /**
@@ -69,7 +72,7 @@ public class DataItemImpl implements DataItem {
 
     /**
      * 修改完成，对修改操作落日志
-     * @param xid
+     * @param xid 事务的id
      */
     @Override
     public void after(long xid) {
