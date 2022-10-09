@@ -192,7 +192,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         }
         lock.unlock();
 
-        if(t.autoAborted) return;
+        if (t.autoAborted) return;
         lt.remove(xid);
         tm.abort(xid);
     }
