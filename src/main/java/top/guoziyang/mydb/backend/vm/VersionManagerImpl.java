@@ -54,7 +54,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
             }
         }
         try {
-            if(Visibility.isVisible(tm, t, entry)) {
+            if (Visibility.isVisible(tm, t, entry)) {
                 return entry.data();
             } else {
                 return null;

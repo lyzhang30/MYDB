@@ -49,6 +49,7 @@ public class Entry {
     }
 
     public static byte[] wrapEntryRaw(long xid, byte[] data) {
+        // 创建记录时调用这个方法
         byte[] xmin = Parser.long2Byte(xid);
         byte[] xmax = new byte[8];
         return Bytes.concat(xmin, xmax, data);
@@ -62,8 +63,8 @@ public class Entry {
         dataItem.release();
     }
 
-    // 以拷贝的形式返回内容
     public byte[] data() {
+        // 以拷贝的形式返回内容
         dataItem.rLock();
         try {
             SubArray sa = dataItem.data();

@@ -11,6 +11,9 @@ import top.guoziyang.mydb.backend.tm.TransactionManagerImpl;
 public class Transaction {
     public long xid;
     public int level;
+    /**
+     * 保存这个事务在创建时记录当前所有的事务状态的快照
+     */
     public Map<Long, Boolean> snapshot;
     public Exception err;
     public boolean autoAborted;
@@ -19,9 +22,9 @@ public class Transaction {
         Transaction t = new Transaction();
         t.xid = xid;
         t.level = level;
-        if(level != 0) {
+        if (level != 0) {
             t.snapshot = new HashMap<>();
-            for(Long x : active.keySet()) {
+            for (Long x : active.keySet()) {
                 t.snapshot.put(x, true);
             }
         }
@@ -29,7 +32,7 @@ public class Transaction {
     }
 
     public boolean isInSnapshot(long xid) {
-        if(xid == TransactionManagerImpl.SUPER_XID) {
+        if (xid == TransactionManagerImpl.SUPER_XID) {
             return false;
         }
         return snapshot.containsKey(xid);
